@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+/npm-debug.log*
+/yarn-error.log*
+
+# Environment variables / Secrets
+.env
+.env.test
+.env.local
+
+# Build output
+dist/
+lib/
+
+# OS Metadata
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Coverage reports (if using Jest/Mocha)
+coverage/
