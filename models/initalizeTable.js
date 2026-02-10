@@ -1,4 +1,5 @@
 import { pool } from "./db.js";
+import bcrypt from "bcrypt";
 
 export const initalizeTable = async () => {
     try {
@@ -18,6 +19,43 @@ export const initalizeTable = async () => {
                 created_at TIMESTAMP DEFAULT NOW()
             );
         `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS staff (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                username VARCHAR(20) UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                email TEXT NOT NULL,
+                role VARCHAR(10) NOT NULL CHECK ( role IN ('manager', 'waiter', 'kitchen', 'cashier') ),
+                is_active BOOLEAN DEFAULT FALSE,
+                is_delete BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+        `);
+        
+        // INSERT DEFAULT STAFF
+        const already_in = (await pool.query(`SELECT * FROM staff WHERE role = 'manager'`)).rows
+        if (already_in.length===0) {
+            try {
+                const manager_username = process.env.DEFAULT_MANAGER_USERNAME;
+                const manager_pass = process.env.DEFAULT_MANAGER_PASS;
+                const hash_manager_pass = await bcrypt.hash(manager_pass, 10);
+                const manager_email = process.env.DEFAULT_MANAGER_EMAIL;
+                const kitchen_username = process.env.DEFAULT_KITCHEN_USERNAME;
+                const kitchen_pass = process.env.DEFAULT_KITCHEN_PASS;
+                const hash_kitchen_pass = await bcrypt.hash(kitchen_pass, 10);
+                const kitchen_emai = process.env.DEFAULT_KITCHEN_EMAIL;
+    
+                await pool.query(`
+                    INSERT INTO staff (username, password, email, role)
+                    VALUES 
+                            ($1, $2, $3, 'manager'),
+                            ($4, $5, $6, 'kitchen');
+                `, [manager_username, hash_manager_pass, manager_email, kitchen_username, hash_kitchen_pass, kitchen_emai]);
+            } catch(error) {
+                console.error("Error on adding default staff:",error.message);
+            };
+        };
 
         console.log("Database created.")
     } catch(error) {

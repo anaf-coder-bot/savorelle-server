@@ -6,7 +6,9 @@ import { Server } from "socket.io";
 import dotenv from "dotenv";
 dotenv.config();
 import { initalizeTable } from "./models/initalizeTable.js";
-import ManagerRout from "./routes/managerRoute.js";
+import managerRoute from "./routes/managerRoute.js";
+import authRoute from "./routes/authRouter.js";
+import { authenticate } from "./middleware/protectRoute.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -24,6 +26,7 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
+app.use("/auth", authRoute);
 
 httpServer.listen(PORT, () => {
     initalizeTable();
