@@ -13,7 +13,7 @@ export const login_user = async (username, password, client) => {
         if (['manager', 'kitchen', 'cashier'].includes(get_staff[0].role) && client==="app") return {status:403, msg:"Go to the website to login."};
         if (['waiter'].includes(get_staff[0].role) && client==="web") return {status:403, msg:"Go to the app to login."};
 
-        return {status:200,  payload: {staffId: get_staff[0].id, role: get_staff[0].role}};
+        return {status:200,  payload: {staffId: get_staff[0].id, username: get_staff[0].username, role: get_staff[0].role}, username: get_staff[0].username};
 
     } catch(error) {
         console.error("Error on login_user() :",error.message);
