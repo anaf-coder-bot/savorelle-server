@@ -6,9 +6,10 @@ import { Server } from "socket.io";
 import dotenv from "dotenv";
 dotenv.config();
 import { initalizeTable } from "./models/initalizeTable.js";
-import managerRoute from "./routes/managerRoute.js";
-import authRoute from "./routes/authRouter.js";
 import { allowRoles, authenticate } from "./middleware/protectRoute.js";
+import customerRoute from "./routes/customerRoute.js"
+import managerRoute from "./routes/managerRoute.js";
+import authRoute from "./routes/authRoute.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -28,6 +29,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/auth", authRoute);
+app.use("/customer", customerRoute);
 app.use("/manager", authenticate, allowRoles("manager"), managerRoute);
 
 httpServer.listen(PORT, () => {

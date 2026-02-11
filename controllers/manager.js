@@ -1,4 +1,5 @@
 import { pool } from "../models/db.js";
+import { get_product } from "./customer.js";
 
 export const add_poduct = async (name, description, price, img, category) => {
     try {
@@ -13,16 +14,19 @@ export const add_poduct = async (name, description, price, img, category) => {
     };
 };
 
-export const get_product = async (id) => {
+export const edit_product = async (id, name, description, price, img, category) => {
     try {
-        let product;
-        if (id)
-            product = (await pool.query(`SELECT * FROM menus WHERE id = $1`, [id])).rows[0];
-        else
-            product = (await pool.query(`SELECT * FROM menus ORDER BY CASE category WHEN 'starters' THEN 1 WHEN 'main dishes' THEN 2 WHEN 'desserts' THEN 3 WHEN 'drinks' THEN 4 END`)).rows;
-        return {product};
+        const product = (await get_product(id)).product;
+
+        if (product.length===0) return {status:400, msg: "Product not found."};
+        await pool.query(`
+            UPDATE menus
+            SET name = $1, description = $2, price = $3, img = $4, category = $5
+            WHERE id = $6;
+        `, [name, description, price, img, category, id]);
+        return {status:200, msg:"Edit Success."};
     } catch(error) {
-        console.error("Error on get_product:",error.message);
+        console.error("Error on edit_product:",error.message);
         return {status:500, msg: "Something went wrong, try again."};
     };
 };

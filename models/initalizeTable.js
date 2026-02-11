@@ -13,7 +13,7 @@ export const initalizeTable = async () => {
                 name VARCHAR(50) NOT NULL,
                 description VARCHAR(100),
                 price DECIMAL(10, 2) NOT NULL,
-                category VARCHAR(10) NOT NULL CHECK ( category IN ('starters', 'main dishes', 'desserts', 'drinks')),
+                category VARCHAR(20) NOT NULL CHECK ( category IN ('starters', 'main dishes', 'desserts', 'drinks')),
                 img TEXT NOT NULL,
                 is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT NOW()
