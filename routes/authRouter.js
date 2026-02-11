@@ -12,16 +12,16 @@ router.post("/login", async (req, res) => {
         if (!username || !password || !['web', 'app'].includes(client))
             return res.status(400).json({msg: "All Fields are required."});
 
-        const req_login_user = await login_user(username, password, client);
+        const req_login_user = await login_user(String(username).trim(), password.trim(), client);
         if (req_login_user.status===200) {
             const accessToken = jwt.sign(req_login_user.payload, process.env.JWT_SECRET, {expiresIn: "15m"});
-            const refreshToken = jwt.sign(req_login_user.payload, process.env.JWT_SECRET, {expiresIn: "7d"});
+            const refreshToken = jwt.sign(req_login_user.payload, process.env.JWT_SECRET, {expiresIn: "5d"});
             if (client==="web")
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
                     secure: IS_PRO,
                     sameSite: IS_PRO ? "strict" : "lax",
-                    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+                    expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
                 });
             return res.status(200).json({user: { username: req_login_user.username, role: req_login_user.payload.role }, accessToken, refreshToken: client==="app"?refreshToken:undefined});
             
@@ -44,7 +44,7 @@ router.post("/refresh", (req, res) => {
 
             const { iat, exp, ...rest } = payload;
 
-            const newAccessToken = jwt.sign(rest, process.env.JWT_SECRET, { expiresIn: "7d" });
+            const newAccessToken = jwt.sign(rest, process.env.JWT_SECRET, { expiresIn: "5d" });
             res.json({accessToken:newAccessToken, user: { role: rest.role, username: rest.username }});
         });
     } catch(error) {
@@ -55,10 +55,11 @@ router.post("/refresh", (req, res) => {
 
 router.post("/logout", (req, res) => {
     try {
+        console.log(5)
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure: IS_PRO,
+            sameSite: IS_PRO ? "strict": "lax",
         });
         return res.sendStatus(204);
     } catch(error) {

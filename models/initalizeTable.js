@@ -10,8 +10,8 @@ export const initalizeTable = async () => {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS menus (
                 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                name VARCHAR(20) NOT NULL,
-                description VARCHAR(50),
+                name VARCHAR(50) NOT NULL,
+                description VARCHAR(100),
                 price DECIMAL(10, 2) NOT NULL,
                 category VARCHAR(10) NOT NULL CHECK ( category IN ('starters', 'main dishes', 'desserts', 'drinks')),
                 img TEXT NOT NULL,

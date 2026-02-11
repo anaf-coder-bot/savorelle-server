@@ -8,7 +8,7 @@ dotenv.config();
 import { initalizeTable } from "./models/initalizeTable.js";
 import managerRoute from "./routes/managerRoute.js";
 import authRoute from "./routes/authRouter.js";
-import { authenticate } from "./middleware/protectRoute.js";
+import { allowRoles, authenticate } from "./middleware/protectRoute.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -28,6 +28,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/auth", authRoute);
+app.use("/manager", authenticate, allowRoles("manager"), managerRoute);
 
 httpServer.listen(PORT, () => {
     initalizeTable();
