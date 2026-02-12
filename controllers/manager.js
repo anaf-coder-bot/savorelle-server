@@ -1,5 +1,5 @@
 import { pool } from "../models/db.js";
-import { get_product } from "./customer.js";
+import { get_product, get_table } from "./customer.js";
 import bcrypt from "bcrypt";
 
 export const add_poduct = async (name, description, price, img, category) => {
@@ -120,6 +120,63 @@ export const delete_staff = async (id) => {
         return {status:200, msg:"Delete success"};
     } catch(error) {
         console.error("Error on delete_staff:",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+};
+
+export const add_table = async (table_no, waiter_id) => {
+    try {
+        const table_no_exist = (await get_table({table_no:table_no})).msg;
+        if (table_no_exist.length>0) return {status:400, msg:`Table ${table_no} already exists.`};
+        const waiter_exist = (await get_staff(waiter_id)).msg;
+        if (waiter_exist.length===0) return {status:400, msg:"Waiter not found."};
+    
+        await pool.query(`
+            INSERT INTO tables (table_no, waiter_id)
+            VALUES ($1, $2);
+        `, [table_no, waiter_id]);
+        return {status:200, msg:"Table added."};
+    } catch(error) {
+        console.error("Error on add_table:",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+
+};
+
+export const edit_table = async (id, table_no, waiter_id) => {
+    try {
+        const table = (await get_table({id:id})).msg;
+        if (table.length===0) return {status:400, msg:"Table not found."};
+        const table_no_exist = (await get_table({table_no:table_no})).msg;
+        if (table_no_exist.length>0 && table_no_exist[0].id!==id) return {status:400, msg:`Table ${table_no} already exists.`};
+        const waiter = (await get_staff(waiter_id)).msg;
+        if (waiter.length===0) return {status:400, msg:"Waiter not found."};
+        
+        await pool.query(`
+            UPDATE tables
+            SET table_no = $1, waiter_id = $2
+            WHERE id = $3;    
+        `, [table_no, waiter_id, id]);
+        return {status:200, msg:"Table edited."};
+        
+    } catch(error) {
+        console.error("Error on edit_table:",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+};
+
+export const delete_table = async (id) => {
+    try {
+        const table = (await get_table({id:id})).msg;
+        if (table.length===0) return {status:400, msg:"Table not found."};
+        await pool.query(`
+            UPDATE tables
+            SET is_deleted = TRUE
+            WHERE id = $1;
+        `, [id]);
+        return {status:200, msg:"Table deleted."};
+    } catch(error) {
+        console.error("Error on edit_table:",error.message);
         return {status:500, msg:"Something went wrong, try again."};
     };
 };

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { add_poduct, add_staff, delete_product, delete_staff, edit_product, edit_staff, get_staff } from "../controllers/manager.js";
+import { add_poduct, add_staff, add_table, delete_product, delete_staff, delete_table, edit_product, edit_staff, edit_table, get_staff } from "../controllers/manager.js";
 import { validate as isValidUUID } from "uuid";
 import { notifyEmailChange, sendWelcomeEmail } from "../utils/email.js";
 
@@ -106,5 +106,49 @@ router.post("/delete-staff", async (req, res) => {
         return res.status(500).json({msg:"Something went wrong, try again."});
     };
 });
-    
+
+router.post("/add-table", async (req, res) => {
+    try {
+        const { table_no, waiter_id } = req.body;
+        if (!table_no || !waiter_id) return res.status(400).json({msg:"All fields are required."});
+        if (!isValidUUID(waiter_id)) return res.status(400).json({msg:"Waiter not found."});
+
+        const do_add = await add_table(table_no, waiter_id);
+
+        return res.status(do_add.status).json({msg:do_add.msg});
+
+    } catch(error) {
+        console.error("Error on /manager/add-table:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
+});
+
+router.post("/edit-table", async (req, res) => {
+    try {
+        const { id, table_no, waiter_id } = req.body;
+        if (!id || !table_no || !waiter_id) return res.status(400).json({msg:"All fields are required."});
+        if (!isValidUUID(id) || !isValidUUID(waiter_id)) return res.status(400).json({msg:"Invalid ID."});
+
+        const do_edit = await edit_table(id, table_no, waiter_id);
+        return res.status(do_edit.status).json({msg:do_edit.msg});
+    } catch(error) {
+        console.error("Error on /manager/edit-table:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
+});
+
+router.post("/delete-table", async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) return res.status(400).json({msg:"All fields are required."});
+        if (!isValidUUID(id)) return res.status(400).json({msg:"Table not found."});
+
+        const do_delete = await delete_table(id);
+        return res.status(do_delete.status).json({msg:do_delete.msg});
+    } catch(error) {
+        console.error("Error on /manager/delete-table:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
+});
+
 export default router;
