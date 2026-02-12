@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { add_poduct, add_staff, edit_product, get_staff } from "../controllers/manager.js";
+import { add_poduct, add_staff, edit_product, edit_staff, get_staff } from "../controllers/manager.js";
 import { validate as isValidUUID } from "uuid";
+import { notifyEmailChange, sendWelcomeEmail } from "../utils/email.js";
 
 const router = Router();
 
@@ -53,9 +54,26 @@ router.post("/add-staff", async (req, res) => {
         if (!name || !email ) return res.status(400).json({msg:"All fields are required."});
 
         const do_staff = await add_staff(name, email);
+        if (do_staff.status===200) sendWelcomeEmail(do_staff.data);
+
         return res.status(do_staff.status).json({msg:do_staff.msg});
     } catch(error) {
         console.error("Error on /manager/add-staff:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
+});
+
+router.post("/edit-staff", async (req, res) => {
+    try {
+        const { id, email } = req.body;
+        if (!id || !email) return res.status(400).json({msg:"All fields are required."});
+        if (!isValidUUID(id)) return res.status(400).json({msg:"Staff not found."});
+        
+        const do_edit = await edit_staff(id, email);
+        if (do_edit.status===200) notifyEmailChange(do_edit.data);
+        return res.status(do_edit.status).json({msg:do_edit.msg});
+    } catch(error) {
+        console.error("Error on /manager/edit-staff:",error.message);
         return res.status(500).json({msg:"Something went wrong, try again."});
     };
 });
