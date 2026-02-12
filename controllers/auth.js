@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 export const login_user = async (username, password, client) => {
     try {
         const get_staff = (await pool.query(`
-            SELECT id, username, password, role FROM staff WHERE username = $1 AND is_delete = FALSE;
+            SELECT id, username, password, role FROM staff WHERE username = $1 AND is_deleted = FALSE;
         `, [username])).rows;
         
         if (get_staff.length===0) return {status: 401, msg: "Invalid username or password."};
@@ -20,4 +20,15 @@ export const login_user = async (username, password, client) => {
         return {status: 500, msg:"Something went wrong, try again."};
     };
 
+};
+
+export const get_auth_user = async (id) => {
+    try {
+        const is_auth = (await pool.query(`SELECT * FROM staff WHERE id = $1 AND is_deleted = FALSE`, [id])).rows
+        if (is_auth.length===0) return {status:400, msg:"Staff not found."};
+        return {status:200, msg:"Staff found."};
+    } catch(error) {
+        console.error("Error on get_auth_user:",error.message);
+        return {status:500, msg: "Something went wrong, try again."};
+    };
 };

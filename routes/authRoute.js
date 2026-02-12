@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login_user } from "../controllers/auth.js";
+import { get_auth_user, login_user } from "../controllers/auth.js";
 import jwt from "jsonwebtoken";
 
 const router = Router();
@@ -39,10 +39,20 @@ router.post("/refresh", (req, res) => {
 
         if (!token) return res.sendStatus(401);
         
-        jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
+        jwt.verify(token, process.env.JWT_SECRET, async (err, payload) => {
             if (err) return res.sendStatus(403);
 
             const { iat, exp, ...rest } = payload;
+
+            const is_staff = await get_auth_user(rest.staffId);
+            if (is_staff.status!==200) {
+                res.clearCookie("refreshToken", {
+                    httpOnly: true,
+                    secure: IS_PRO,
+                    sameSite: IS_PRO ? "strict" : "lax",
+                });
+                return res.sendStatus(401);
+            };
 
             const newAccessToken = jwt.sign(rest, process.env.JWT_SECRET, { expiresIn: "5d" });
             res.json({accessToken:newAccessToken, user: { role: rest.role, username: rest.username }});

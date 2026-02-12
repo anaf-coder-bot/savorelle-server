@@ -28,7 +28,7 @@ export const initalizeTable = async () => {
                 email TEXT NOT NULL,
                 role VARCHAR(10) NOT NULL CHECK ( role IN ('manager', 'waiter', 'kitchen', 'cashier') ),
                 is_active BOOLEAN DEFAULT FALSE,
-                is_delete BOOLEAN DEFAULT FALSE,
+                is_deleted BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT NOW()
             );
         `);
@@ -47,7 +47,7 @@ export const initalizeTable = async () => {
                 const kitchen_emai = process.env.DEFAULT_KITCHEN_EMAIL;
                 const cashier_username = process.env.DEFAULT_CASHIER_USERNAME;
                 const cashier_pass = process.env.DEFAULT_CASHIER_PASS;
-                const hash_cashier_pass = await bcrypt.hash(cashier_pass);
+                const hash_cashier_pass = await bcrypt.hash(cashier_pass, 10);
                 const cashier_email = process.env.DEFAULT_CASHIER_EMAIL;
     
                 await pool.query(`
@@ -55,7 +55,7 @@ export const initalizeTable = async () => {
                     VALUES 
                             ($1, $2, $3, 'manager'),
                             ($4, $5, $6, 'kitchen'),
-                            ($6, $7, $8, 'cashier;);
+                            ($7, $8, $9, 'cashier');
                 `, [manager_username, hash_manager_pass, manager_email, kitchen_username, hash_kitchen_pass, kitchen_emai, cashier_username, hash_cashier_pass, cashier_email]);
             } catch(error) {
                 console.error("Error on adding default staff:",error.message);

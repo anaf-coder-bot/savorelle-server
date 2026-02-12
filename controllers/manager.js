@@ -32,13 +32,30 @@ export const edit_product = async (id, name, description, price, img, category) 
     };
 };
 
+export const delete_product = async (id) => {
+    try {
+        const product = (await get_product(id)).msg;
+
+        if (product.length===0) return {status:400, msg:"Product not found."};
+        await pool.query(`
+            UPDATE menus
+            SET is_deleted = TRUE
+            WHERE id = $1;
+        `, [id]);
+        return {status:200, msg:"Delete success"};
+    } catch(error) {
+        console.error("Error on delete_product:",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+};
+
 export const get_staff = async (id) => {
     try {
         let staff;
         if (id)
-            staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE id = $1 AND is_delete = FALSE AND role = 'waiter' ORDER BY username;`, [id])).rows;
+            staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE id = $1 AND is_deleted = FALSE AND role = 'waiter' ORDER BY username;`, [id])).rows;
         else
-            staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE is_delete = FALSE AND role = 'waiter' ORDER BY username;`)).rows;
+            staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE is_deleted = FALSE AND role = 'waiter' ORDER BY username;`)).rows;
         return {status:200, msg:staff};
     } catch(error) {
         console.error("Error on get_staff", error.message);
@@ -86,6 +103,23 @@ export const edit_staff = async (id, email) => {
         
     } catch(error) {
         console.error("Error on edit_staff:",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+};
+
+export const delete_staff = async (id) => {
+    try {
+        const staff = (await get_staff(id)).msg;
+        if (staff.length===0) return {status:400, msg:"Staff not found."};
+        
+        await pool.query(`
+            UPDATE staff
+            SET is_deleted = TRUE
+            WHERE id = $1;
+        `, [id]);
+        return {status:200, msg:"Delete success"};
+    } catch(error) {
+        console.error("Error on delete_staff:",error.message);
         return {status:500, msg:"Something went wrong, try again."};
     };
 };

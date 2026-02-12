@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { add_poduct, add_staff, edit_product, edit_staff, get_staff } from "../controllers/manager.js";
+import { add_poduct, add_staff, delete_product, delete_staff, edit_product, edit_staff, get_staff } from "../controllers/manager.js";
 import { validate as isValidUUID } from "uuid";
 import { notifyEmailChange, sendWelcomeEmail } from "../utils/email.js";
 
@@ -35,6 +35,21 @@ router.post("/edit-product", async (req, res) => {
     } catch(error) {
         console.error("Error on /manager/edit-product:",error.message);
         return res.status(500).json({msg: "Something went wrong, try again."});
+    };
+});
+
+router.post("/delete-product", async (req, res) => {
+    try {
+      const { id } = req.body;
+      if (!id) return res.status(400).json({msg:"All field are required."});
+      if (!isValidUUID(id)) return res.status(400).json({msg:"Product not found."});
+      
+      const do_delete = await delete_product(id);
+      return res.status(do_delete.status).json({msg:do_delete.msg});
+
+    } catch(error) {
+        console.error("Error on /manager/delete-product:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
     };
 });
 
@@ -74,6 +89,20 @@ router.post("/edit-staff", async (req, res) => {
         return res.status(do_edit.status).json({msg:do_edit.msg});
     } catch(error) {
         console.error("Error on /manager/edit-staff:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
+});
+
+router.post("/delete-staff", async (req, res) => {
+    try {
+        const { id } = req.body;
+        if (!id) return res.status(400).json({msg:"All fields are required."});
+        if (!isValidUUID(id)) return res.status(400).json({msg:"Staff not found."});
+
+        const do_delete = await delete_staff(id);
+        return res.status(do_delete.status).json({msg:do_delete.msg});
+    } catch(error) {
+        console.error("Error on /manager/delete-staff:",error.message);
         return res.status(500).json({msg:"Something went wrong, try again."});
     };
 });
