@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { add_poduct, edit_product } from "../controllers/manager.js";
+import { add_poduct, add_staff, edit_product, get_staff } from "../controllers/manager.js";
 import { validate as isValidUUID } from "uuid";
 
 const router = Router();
@@ -23,7 +23,7 @@ router.post("/add-product", async (req, res) => {
 router.post("/edit-product", async (req, res) => {
     try {
         const { id, name, description, price, img, category } = req.body;
-        console.log(id, name, description, price, img, category)
+
         if (!id || !name || !price || !img || !category) return res.status(400).json({msg:"All fields are required."});
         if (!isValidUUID(id)) return res.status(400).json({msg:"Product not found."});
 
@@ -34,6 +34,29 @@ router.post("/edit-product", async (req, res) => {
     } catch(error) {
         console.error("Error on /manager/edit-product:",error.message);
         return res.status(500).json({msg: "Something went wrong, try again."});
+    };
+});
+
+router.get("/get-staff", async (req, res) => {
+    try {
+        const do_get = await get_staff();
+        return res.status(do_get.status).json({staff:do_get.msg});
+    } catch (error) {
+        console.error("Error on /manager/get-staff", error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
+});
+
+router.post("/add-staff", async (req, res) => {
+    try {
+        const { name, email } = req.body;
+        if (!name || !email ) return res.status(400).json({msg:"All fields are required."});
+
+        const do_staff = await add_staff(name, email);
+        return res.status(do_staff.status).json({msg:do_staff.msg});
+    } catch(error) {
+        console.error("Error on /manager/add-staff:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
     };
 });
     

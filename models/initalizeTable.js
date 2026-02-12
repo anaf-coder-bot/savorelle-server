@@ -45,13 +45,18 @@ export const initalizeTable = async () => {
                 const kitchen_pass = process.env.DEFAULT_KITCHEN_PASS;
                 const hash_kitchen_pass = await bcrypt.hash(kitchen_pass, 10);
                 const kitchen_emai = process.env.DEFAULT_KITCHEN_EMAIL;
+                const cashier_username = process.env.DEFAULT_CASHIER_USERNAME;
+                const cashier_pass = process.env.DEFAULT_CASHIER_PASS;
+                const hash_cashier_pass = await bcrypt.hash(cashier_pass);
+                const cashier_email = process.env.DEFAULT_CASHIER_EMAIL;
     
                 await pool.query(`
                     INSERT INTO staff (username, password, email, role)
                     VALUES 
                             ($1, $2, $3, 'manager'),
-                            ($4, $5, $6, 'kitchen');
-                `, [manager_username, hash_manager_pass, manager_email, kitchen_username, hash_kitchen_pass, kitchen_emai]);
+                            ($4, $5, $6, 'kitchen'),
+                            ($6, $7, $8, 'cashier;);
+                `, [manager_username, hash_manager_pass, manager_email, kitchen_username, hash_kitchen_pass, kitchen_emai, cashier_username, hash_cashier_pass, cashier_email]);
             } catch(error) {
                 console.error("Error on adding default staff:",error.message);
             };
