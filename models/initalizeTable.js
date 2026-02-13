@@ -36,7 +36,7 @@ export const initalizeTable = async () => {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS tables (
                 id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-                table_no VARCHAR(4) UNIQUE NOT NULL,
+                table_no VARCHAR(4) NOT NULL,
                 waiter_id UUID REFERENCES staff(id) ON DELETE SET NULL,
                 is_deleted BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT NOW()

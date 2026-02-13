@@ -52,11 +52,17 @@ export const delete_product = async (id) => {
 export const get_staff = async (id) => {
     try {
         let staff;
+        const staff_with_table = [];
         if (id)
             staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE id = $1 AND is_deleted = FALSE AND role = 'waiter' ORDER BY username;`, [id])).rows;
         else
-            staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE is_deleted = FALSE AND role = 'waiter' ORDER BY username;`)).rows;
-        return {status:200, msg:staff};
+            staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE is_deleted = FALSE AND role = 'waiter' GROUP BY id ORDER BY username;`)).rows;
+        for (const s of staff) {
+            const tables = (await pool.query(`SELECT id, table_no FROM tables WHERE waiter_id = $1 AND is_deleted = FALSE ORDER BY table_no;`, [s.id])).rows;
+            staff_with_table.push({...s, tables:tables});
+        };
+
+        return {status:200, msg:staff_with_table};
     } catch(error) {
         console.error("Error on get_staff", error.message);
         return {status:500, msg:"Something went wrong, try again."};
@@ -111,7 +117,7 @@ export const delete_staff = async (id) => {
     try {
         const staff = (await get_staff(id)).msg;
         if (staff.length===0) return {status:400, msg:"Staff not found."};
-        
+        if (staff[0].tables.length>0) return {status:400, msg:`Make sure to update all ${staff[0].username} tables first`};
         await pool.query(`
             UPDATE staff
             SET is_deleted = TRUE
