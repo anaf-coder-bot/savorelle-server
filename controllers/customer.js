@@ -29,13 +29,3 @@ export const get_table = async ({id, table_no} = {}) => {
         return {status:500, msg: "Something went wrong, try again"};
     };
 };
-
-export const get_all_staff = async () => {
-    try {
-        const staff = (await pool.query(`SELECT id, username FROM staff WHERE is_deleted = FALSE AND role = 'waiter';`)).rows;
-        return {status:200, msg:staff};
-    } catch(error) {
-        console.error("Error on get_staff:",error.message);
-        return {status:500, msg:"Something went wrong, try again."};
-    };
-};

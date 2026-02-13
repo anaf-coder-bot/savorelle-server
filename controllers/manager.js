@@ -56,7 +56,7 @@ export const get_staff = async (id) => {
         if (id)
             staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE id = $1 AND is_deleted = FALSE AND role = 'waiter' ORDER BY username;`, [id])).rows;
         else
-            staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE is_deleted = FALSE AND role = 'waiter' GROUP BY id ORDER BY username;`)).rows;
+            staff = (await pool.query(`SELECT id, username, email, role, is_active, created_at FROM staff WHERE is_deleted = FALSE AND role = 'waiter' ORDER BY username;`)).rows;
         for (const s of staff) {
             const tables = (await pool.query(`SELECT id, table_no FROM tables WHERE waiter_id = $1 AND is_deleted = FALSE ORDER BY table_no;`, [s.id])).rows;
             staff_with_table.push({...s, tables:tables});

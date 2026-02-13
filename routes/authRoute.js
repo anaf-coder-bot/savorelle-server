@@ -65,7 +65,6 @@ router.post("/refresh", (req, res) => {
 
 router.post("/logout", (req, res) => {
     try {
-        console.log(5)
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: IS_PRO,

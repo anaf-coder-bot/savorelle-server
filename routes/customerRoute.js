@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { get_all_staff, get_product, get_table } from "../controllers/customer.js";
+import { get_product, get_table } from "../controllers/customer.js";
 import { validate as isValidUUID } from "uuid";
+import { confirmEmail } from "../utils/email.js";
 
 const router = Router();
 
@@ -38,12 +39,15 @@ router.get("/get-table/:id", async (req, res) => {
     };
 });
 
-router.get("/get-staff", async (req, res) => {
+router.post("/verify-email", async (req, res) => {
     try {
-        const do_get = await get_all_staff();
-        return res.status(do_get.status).json({msg:do_get.msg});
+        const { name, phone, email } = req.body;
+        if (!name || !phone || !email) return res.status(400).json({msg:"All fields are required."});
+        const code = Math.floor(1000 + Math.random() * 9000);
+        await confirmEmail({name, email, code});
+        return res.status(200).json({code});
     } catch(error) {
-        console.error("Error on /manager/get-staff", error.message);
+        console.log("Error on /customer/verify-email.html", error.message);
         return res.status(500).json({msg:"Something went wrong, try again."});
     };
 });

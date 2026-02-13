@@ -69,3 +69,23 @@ export const notifyEmailChange = async (data) => {
         console.error("Error while sending notify email email:",error.message);
     };
 };
+
+export const confirmEmail = async (data) => {
+    try {
+        let htmlContent = await get_template("Confirm-Email.html");
+
+        htmlContent = htmlContent
+                        .replace(/{{customer_name}}/g, data.name)
+                        .replace(/{{code}}/g, data.code);
+        
+        transporter.sendMail({
+            from: '"Savorelle Restaurant" <noreply@savorelle.com>',
+            to:data.email,
+            subject: 'Confirm your gmail.',
+            html:htmlContent
+        });
+        return true;
+    } catch(error) {
+        console.error("Error while sending confirm email email:",error.message);
+    };
+};
