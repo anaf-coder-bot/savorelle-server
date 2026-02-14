@@ -42,6 +42,43 @@ export const initalizeTable = async () => {
                 created_at TIMESTAMP DEFAULT NOW()
             );
         `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS orders (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                customer_name VARCHAR(50) NOT NULL,
+                customer_email TEXT NOT NULL,
+                customer_phone VARCHAR(10) NOT NULL,
+                table_id UUID REFERENCES tables(id) ON DELETE SET NULL,
+                waiter_id UUID REFERENCES staff(id) ON DELETE SET NULL,
+                price DECIMAL(10, 2) NOT NULL,
+                first_price DECIMAL(10,2) NOT NULL,
+                first_status VARCHAR(20) DEFAULT 'pending' CHECK ( first_status IN ( 'pending', 'paid', 'failed') ),
+                first_tx_ref TEXT,
+                first_at TIMESTAMP,
+                first_failed INT DEFAULT 0,
+                last_price DECIMAL(10,2) NOT NULL,
+                last_status VARCHAR(20) DEFAULT 'pending' CHECK ( last_status IN ('pending', 'paid', 'failed') ),
+                last_tx_ref TEXT,
+                last_at TIMESTAMP,
+                last_failed INT DEFAULT 0,
+                is_cash BOOLEAN DEFAULT FALSE,
+                status VARCHAR(20) DEFAULT 'pending' CHECK ( status IN ('pending', 'preparing', 'serving', 'paying', 'done') ),
+                tip DECIMAL(10,2) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT NOW()
+            ); 
+        `);
+
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS order_items (
+                id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+                order_id UUID REFERENCES orders(id) ON DELETE SET NULL,
+                menu_id UUID REFERENCES menus(id) ON DELETE SET NULL,
+                quantity INT NOT NULL,
+                price DECIMAL(10,2) NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+        `);
         
         // INSERT DEFAULT STAFF
         const already_in = (await pool.query(`SELECT * FROM staff WHERE role = 'manager'`)).rows
