@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Savorelle Order Confirmation</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+          
+          <tr>
+            <td align="center" style="padding: 40px 20px; background-color: #1a1a1a;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 4px; text-transform: uppercase;">Savorelle</h1>
+              <p style="color: #bc9355; margin: 10px 0 0 0; font-size: 12px; letter-spacing: 2px;">ORDER CONFIRMATION</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 40px 30px 20px 30px;">
+              <h2 style="color: #333; margin: 0 0 10px 0;">Thank you, {{order.customer_name}}!</h2>
+              <p style="color: #555; line-height: 1.6; font-size: 15px; margin: 0;">
+                We've received your deposit. Our chefs are now preparing your meal. Please find your order details and payment breakdown below.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 0 30px;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top: 2px solid #f4f4f4; border-bottom: 2px solid #f4f4f4; padding: 20px 0;">
+                <thead>
+                  <tr>
+                    <th align="left" style="font-size: 12px; color: #999; text-transform: uppercase; padding-bottom: 10px;">Item Description</th>
+                    <th align="center" style="font-size: 12px; color: #999; text-transform: uppercase; padding-bottom: 10px;">Qty</th>
+                    <th align="right" style="font-size: 12px; color: #999; text-transform: uppercase; padding-bottom: 10px;">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#each order.items}}
+                  <tr>
+                    <td style="padding: 10px 0; color: #333; font-size: 14px;">{{this.name}}</td>
+                    <td align="center" style="padding: 10px 0; color: #333; font-size: 14px;">{{this.quantity}}</td>
+                    <td align="right" style="padding: 10px 0; color: #333; font-size: 14px;">{{this.price}}</td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 20px 30px;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="padding: 5px 0; color: #777; font-size: 14px;">Total Order Amount</td>
+                  <td align="right" style="padding: 5px 0; color: #333; font-weight: bold;">{{order.price}} ETB</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0; color: #27ae60; font-size: 14px;">Deposit Paid (20%)</td>
+                  <td align="right" style="padding: 5px 0; color: #27ae60; font-weight: bold;">- {{order.first_price}} ETB</td>
+                </tr>
+                <tr style="border-top: 1px solid #eee;">
+                  <td style="padding: 15px 0 5px 0; color: #333; font-size: 16px; font-weight: bold;">Balance Due After Service</td>
+                  <td align="right" style="padding: 15px 0 5px 0; color: #e67e22; font-size: 18px; font-weight: bold;">{{order.last_price}} ETB</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 0 30px 30px 30px;">
+              <div style="background-color: #fff9f4; border-left: 4px solid #bc9355; padding: 15px; font-size: 13px; color: #666; line-height: 1.5;">
+                <strong>Note:</strong> Your initial payment of {{order.first_price}} ETB covers the {{first_fee}}% order commitment. The remaining balance of {{order.last_price}} ETB plus any additional items or tips will be settled once your food is served.
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding: 0 30px 40px 30px;">
+              <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="border-radius: 4px;" bgcolor="#1a1a1a">
+                    <a href="{{order.reciept}}" target="_blank" style="font-size: 14px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 12px 25px; display: inline-block; font-weight: bold;">View Official Receipt</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                Date: <span id="time">{{order.first_at}}</span>
+              </p>
+              <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                Contact: {{order.customer_phone}} | {{order.customer_email}}
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding: 20px; background-color: #f9f9f9; color: #bbb; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+              © 2026 Savorelle Restaurant. Experience Excellence.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+<script>
+  const time = document.getElementById("time");
+  const time_fix = new Date(time.innerText).toLocaleString(undefined, {year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"numeric"});
+  time.textContent = time_fix;
+</script>
+</html>

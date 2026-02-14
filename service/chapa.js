@@ -8,7 +8,7 @@ const chapa = new Chapa({
 
 export const get_tx_ref = async () => await chapa.genTxRef();
 
-export const start_payment = async (tx_ref, amount, name, email, phone, round, url) => {
+export const start_payment = async (tx_ref, amount, name, email, phone, url) => {
     try {
         const req = await chapa.initialize({
             first_name: name,
@@ -17,7 +17,7 @@ export const start_payment = async (tx_ref, amount, name, email, phone, round, u
             currency: "ETB",
             amount: String(amount),
             tx_ref:tx_ref,
-            return_url: `${process.env.FRONTEND}/customer/check-payment?tx=${tx_ref}`,
+            return_url: `${process.env.FRONTEND}/check-payment?tx-ref=${tx_ref}`,
             callback_url: `${url}/customer/verify-payment`,
         });
         return {status:200, msg:req};
@@ -32,7 +32,8 @@ export const verify_payment = async (tx_ref) => {
         const req = await chapa.verify({tx_ref:tx_ref});
         const status = req.data.status;
         const amount = req.data.amount;
-        return {status:200, payment:status, amount:amount};
+        const ref_id = req.data.reference;
+        return {status:200, payment:status, amount, ref_id};
     } catch(error) {
         console.error("Error on verify_payment:",error.message);
         return {status:500, msg:"Something went wrong, try again."};

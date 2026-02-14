@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 dotenv.config();
+import Handlebars from "handlebars";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -87,5 +88,26 @@ export const confirmEmail = async (data) => {
         return true;
     } catch(error) {
         console.error("Error while sending confirm email email:",error.message);
+    };
+};
+
+export const confirmPaymentEmail = async (data) => {
+    try {
+        data["first_fee"] = process.env.FIRST_FEE;
+        data["last_fee"] = process.env.LAST_FEE;
+        // console.log(data)
+        data["first_at"] = new Date(data.first_at).toLocaleString(undefined, {year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"numeric"})
+        const source = await get_template("Confirm-Payment.html");
+        const template = Handlebars.compile(source);
+        const htmlContent = template({order:data});
+        transporter.sendMail({
+            from: '"Savorelle Restaurant" <noreply@savorelle.com>',
+            to:data.customer_email,
+            subject:"Payment Confirmed.",
+            html:htmlContent
+        });
+        return true;
+    } catch(error) {
+        console.error("Error while sending confirm payment email:",error.message);
     };
 };

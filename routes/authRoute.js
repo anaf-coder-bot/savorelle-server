@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 const router = Router();
 
 const IS_PRO = process.env.NODE_ENV === "pro";
-
 router.post("/login", async (req, res) => {
     try {
         const { username, password, client } = req.body;
@@ -20,7 +19,7 @@ router.post("/login", async (req, res) => {
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
                     secure: IS_PRO,
-                    sameSite: IS_PRO ? "strict" : "lax",
+                    sameSite: IS_PRO ? "none" : "lax",
                     expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
                 });
             return res.status(200).json({user: { username: req_login_user.username, role: req_login_user.payload.role }, accessToken, refreshToken: client==="app"?refreshToken:undefined});
