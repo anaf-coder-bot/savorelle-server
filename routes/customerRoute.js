@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { add_order, do_fail_order, get_product, get_table } from "../controllers/customer.js";
+import { add_order, do_fail_order, do_success_order, get_product, get_table } from "../controllers/customer.js";
 import { validate as isValidUUID } from "uuid";
 import { confirmEmail } from "../utils/email.js";
-import { start_payment } from "../service/chapa.js";
+import { start_payment, verify_payment } from "../service/chapa.js";
 
 const router = Router();
 
@@ -64,7 +64,7 @@ router.post("/start-payment", async (req, res) => {
         const protocol = req.protocol;
         const host = req.get('host');
         const url = `${protocol}://${host}`;
-        const do_pay = await start_payment(do_order.msg.first_tx, do_order.msg.total, name, email, phone, 1, url);
+        const do_pay = await start_payment(do_order.msg.first_tx, do_order.msg.first_price, name, email, phone, 1, url);
         if (do_pay.status!==200)
             await do_fail_order(do_order.msg.first_tx);
         return res.status(do_pay.status).json({msg:do_pay.msg});
@@ -72,6 +72,32 @@ router.post("/start-payment", async (req, res) => {
         console.error("Error on /customer/start-payment:",error.message);
         return res.status(500).json({msg:"Something went wrong, try again."});
     };
+});
+
+router.get("/verify-payment", async (req, res) => {
+    try {
+        const { trx_ref } = req.body;
+        const do_verify = await verify_payment(trx_ref);
+        if (do_verify.status!==200) return res.status(do_verify.status).json({msg:do_verify.msg});
+        if (do_verify.payment==="failed") {
+            const is_round_1 = await do_fail_order(trx_ref, "first");
+            if (is_round_1.status===400) {
+                const is_round_2 = await do_fail_order(trx_ref, "last");
+                if (is_round_2.status!==200) return res.status(is_round_2.status).json({msg:is_round_2.msg});
+            } else if (is_round_1.status!==200) return res.status(is_round_1.status).json({msg:is_round_1.msg});
+        } else if (do_verify.payment==="success") {
+            const is_round_1 = await do_success_order(trx_ref, "first", do_verify.amount);
+            if (is_round_1.status===400) {
+                const is_round_2 = await do_success_order(trx_ref, "last", do_verify.amount);
+                if (is_round_2.status!==200) return res.status(is_round_2.status).json({msg:is_round_2.msg});
+            } else if (is_round_1.status!==200) return res.status(is_round_1.status).json({msg:is_round_1.msg})
+        };
+        return res.status(200).json({msg:"Success."});
+    } catch(error) {
+        console.error("Error on /customer/verify-payment:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
+
 });
 
 export default router;

@@ -26,3 +26,15 @@ export const start_payment = async (tx_ref, amount, name, email, phone, round, u
         return {status:500, msg:"Something went wrong, try again."};
     };
 };
+
+export const verify_payment = async (tx_ref) => {
+    try {
+        const req = await chapa.verify({tx_ref:tx_ref});
+        const status = req.data.status;
+        const amount = req.data.amount;
+        return {status:200, payment:status, amount:amount};
+    } catch(error) {
+        console.error("Error on verify_payment:",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+};

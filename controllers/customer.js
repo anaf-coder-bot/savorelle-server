@@ -62,7 +62,7 @@ export const add_order = async (cart, table_id, name, email, phone) => {
                 VALUES ($1, $2, $3, $4);
             `, [order.id, id, quantity, price]);
         };
-        return {status:200, msg:{first_tx, total}};
+        return {status:200, msg:{first_tx, first_price:total*FIRST_FEE}};
     } catch(error) {
         console.error("Error on start_payment:",error.message);
         return {status:500, msg:"Something went wrong, try again."};
@@ -95,17 +95,61 @@ export const do_fail_order = async (tx_ref, round) => {
             const order = (await get_ordre({first_tx_ref:tx_ref})).msg;
             if (order.length===0)
                 return {status:400, msg:"Order not found"};
+            if (order[0].first_status!=="pending") return {status:403, msg:"Payment is not on pending."};
             await pool.query(`
                 UPDATE orders
                 SET first_status = 'failed', first_at = NOW(), first_failed = first_failed + 1
                 WHERE first_tx_ref = $1;
             `, [tx_ref]);
-            return {status:200, msg:"Order failed success."};
-        } else {
-
-        }
+        } else if (round === "last") {
+            const order = (await get_ordre({last_tx_ref:tx_ref})).msg;
+            if (order.length===0)
+                return {status:400, msg:"Order not found."};
+            if (order[0].last_status!=="pending") return {status:403, msg:"Payment is not on pending."};
+            await pool.query(`
+                UPDATE orders
+                SET last_status = 'failed', last_at = NOW(), last_failed = last_failed + 1
+                WHERE last_tx_ref = $1;
+            `, [tx_ref]);
+        };
+        return {status:200, msg:"Payment failed."};
     } catch(error) {
         console.error("Error on do_fail_order:",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+};
+
+export const do_success_order = async (tx_ref, round, amount) => {
+    try {
+        if (!round || round === "first") {
+            const order = (await get_ordre({first_tx_ref:tx_ref})).msg;
+            if (order.length===0)
+                return {status:400, msg:"Order not found."};
+            if (order[0].first_status!=="pending") return {status:403, msg:"Payment is not on pending."};
+
+            if (Number(amount)!==Number(order[0].first_price)) {
+                do_fail_order(tx_ref);
+                return {status:403, msg:"Payment amount is not right."};
+            };
+            await pool.query(`
+                UPDATE orders
+                SET first_status = 'paid', first_at = NOW()
+                WHERE first_tx_ref = $1;
+            `, [tx_ref]);
+        } else if (round === "last") {
+            const order = (await get_ordre({last_tx_ref:tx_ref})).msg;
+            if (order.length===0)
+                return {status:400, msg:"Order not found."};
+            if (order[0].last_status!=="pending") return {status:403, msg:"Payment is not on pending."};
+            await pool.query(`
+                UPDATE orders
+                SET last_status = 'paid', last_at = NOW()
+                WHERE last_tx_ref = $1;
+            `, [tx_ref]);
+        };
+        return {status:200, msg:"Payment success."}
+    } catch(error) {
+        console.error("Error on do_success_order:",error.message);
         return {status:500, msg:"Something went wrong, try again."};
     };
 };

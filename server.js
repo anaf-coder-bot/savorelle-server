@@ -27,6 +27,7 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(express.json());
+app.set("trust proxy", true);
 
 app.use("/auth", authRoute);
 app.use("/customer", customerRoute);
