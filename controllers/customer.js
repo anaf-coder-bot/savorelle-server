@@ -126,14 +126,14 @@ export const do_success_order = async (tx_ref, round, amount) => {
             if (order.length===0)
                 return {status:400, msg:"Order not found."};
             if (order[0].first_status!=="pending") return {status:403, msg:"Payment is not on pending."};
-
+    
             if (Number(amount)!==Number(order[0].first_price)) {
                 do_fail_order(tx_ref);
                 return {status:403, msg:"Payment amount is not right."};
             };
             await pool.query(`
                 UPDATE orders
-                SET first_status = 'paid', first_at = NOW()
+                SET first_status = 'paid', first_at = NOW(), status = 'preparing'
                 WHERE first_tx_ref = $1;
             `, [tx_ref]);
         } else if (round === "last") {
@@ -141,9 +141,10 @@ export const do_success_order = async (tx_ref, round, amount) => {
             if (order.length===0)
                 return {status:400, msg:"Order not found."};
             if (order[0].last_status!=="pending") return {status:403, msg:"Payment is not on pending."};
+            if (order[0].status!=='paying') return {status:403, msg:"Order is not served yet."};
             await pool.query(`
                 UPDATE orders
-                SET last_status = 'paid', last_at = NOW()
+                SET last_status = 'paid', last_at = NOW(), status = 'done'
                 WHERE last_tx_ref = $1;
             `, [tx_ref]);
         };

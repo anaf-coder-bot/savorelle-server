@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { add_order, do_fail_order, do_success_order, get_product, get_table } from "../controllers/customer.js";
+import { add_order, do_fail_order, do_success_order, get_ordre, get_product, get_table } from "../controllers/customer.js";
 import { validate as isValidUUID } from "uuid";
 import { confirmEmail } from "../utils/email.js";
 import { start_payment, verify_payment } from "../service/chapa.js";
@@ -98,6 +98,26 @@ router.get("/verify-payment", async (req, res) => {
         return res.status(500).json({msg:"Something went wrong, try again."});
     };
 
+});
+
+router.get("/check-payment/:tx", async (req, res) => {
+    try {
+        const tx = req.params.tx;
+        let order = {}
+        const is_round_1 = (await get_ordre({first_tx_ref:tx})).msg;
+        if (is_round_1.length)
+            order = {status:is_round_1[0].first_status, round:"first"};
+        else {
+            const is_round_2 = (await get_ordre({last_tx_ref:tx})).msg;
+            if (is_round_2.length)
+                order = {status:is_round_2[0].last_status, round:"last"};
+            else return res.status(400).json({msg:"Order not found."});
+        };
+        return res.status(200).json({order});
+    } catch(error) {
+        console.error("Error on /customer/check-payment:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
 });
 
 export default router;
