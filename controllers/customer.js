@@ -73,11 +73,11 @@ export const get_order = async ({ id, first_tx_ref, last_tx_ref }) => {
     try {
         let order;
         if (id)
-            order = (await pool.query(`SELECT * FROM orders WHERE id = $1`, [id])).rows;
+            order = (await pool.query(`SELECT o.*, w.username AS waiter_name FROM orders o JOIN staff w ON w.id = o.waiter_id WHERE o.id = $1`, [id])).rows;
         else if (first_tx_ref)
-            order = (await pool.query(`SELECT * FROM orders WHERE first_tx_ref = $1`, [first_tx_ref])).rows;
+            order = (await pool.query(`SELECT o.*, w.username AS waiter_name FROM orders o JOIN staff w ON w.id = o.waiter_id WHERE o.first_tx_ref = $1`, [first_tx_ref])).rows;
         else if (last_tx_ref)
-            order = (await pool.query(`SELECT * FROM orders WHERE last_tx_ref = $1`, [last_tx_ref])).rows;
+            order = (await pool.query(`SELECT o.*, w.username AS waiter_name FROM orders o JOIN staff w ON w.id = o.waiter_id WHERE o.last_tx_ref = $1`, [last_tx_ref])).rows;
         if (order.length>0) {
             const items = (await pool.query(`SELECT i.*, m.name FROM order_items i JOIN menus m ON m.id = i.menu_id WHERE i.order_id = $1`, [order[0].id])).rows;
             order = [{...order[0], items}];

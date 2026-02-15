@@ -6,18 +6,18 @@ export const get_order = async (id="") => {
         let order
         if (id)
             order = (await pool.query(`
-                    SELECT o.id, o.customer_name, o.status, t.table_no, w.username AS waiter_name 
+                    SELECT o.id, o.customer_name, o.status, o.first_at, t.table_no, w.username AS waiter_name 
                     FROM orders o JOIN tables t ON t.id = o.table_id 
                     JOIN staff w ON w.id = o.waiter_id 
-                    WHERE o.id = $1 AND o.status IN ('pending', 'preparing') AND o.created_at >= CURRENT_DATE
+                    WHERE o.id = $1 AND o.status IN ('pending', 'preparing') AND o.first_status = 'paid' AND o.created_at >= CURRENT_DATE
                     ORDER BY status`,
             [id])).rows;
         else
             order = (await pool.query(`
-                    SELECT o.id, o.customer_name, o.status, t.table_no, w.username AS waiter_name 
+                    SELECT o.id, o.customer_name, o.status, o.first_at, t.table_no, w.username AS waiter_name 
                     FROM orders o JOIN tables t ON t.id = o.table_id 
                     JOIN staff w ON w.id = o.waiter_id 
-                    WHERE o.status IN ('pending', 'preparing') AND o.created_at >= CURRENT_DATE
+                    WHERE o.status IN ('pending', 'preparing') AND o.first_status = 'paid' AND o.created_at >= CURRENT_DATE
                     ORDER BY status`
             )).rows;
         

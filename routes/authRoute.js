@@ -20,6 +20,7 @@ router.post("/login", async (req, res) => {
                     httpOnly: true,
                     secure: IS_PRO,
                     sameSite: IS_PRO ? "none" : "lax",
+                    path:"/",
                     expires: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
                 });
             return res.status(200).json({user: { username: req_login_user.username, role: req_login_user.payload.role }, accessToken, refreshToken: client==="app"?refreshToken:undefined});
@@ -48,7 +49,8 @@ router.post("/refresh", (req, res) => {
                 res.clearCookie("refreshToken", {
                     httpOnly: true,
                     secure: IS_PRO,
-                    sameSite: IS_PRO ? "strict" : "lax",
+                    path:"/",
+                    sameSite: IS_PRO ? "none" : "lax",
                 });
                 return res.sendStatus(401);
             };
@@ -67,7 +69,8 @@ router.post("/logout", (req, res) => {
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: IS_PRO,
-            sameSite: IS_PRO ? "strict": "lax",
+            path:"/",
+            sameSite: IS_PRO ? "none": "lax",
         });
         return res.sendStatus(204);
     } catch(error) {

@@ -11,16 +11,13 @@ import customerRoute from "./routes/customerRoute.js"
 import managerRoute from "./routes/managerRoute.js";
 import authRoute from "./routes/authRoute.js";
 import kitchenRoute from "./routes/kitchenRoute.js";
+import { initalizeSocket } from "./ws/server.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-    cors: {
-        origin: "*"
-    }
-});
+
 
 app.use(cors({
     origin: process.env.FRONTEND,
@@ -29,6 +26,8 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 app.set("trust proxy", true);
+
+const io = initalizeSocket(httpServer, app);
 
 app.use("/auth", authRoute);
 app.use("/customer", customerRoute);
@@ -39,3 +38,5 @@ httpServer.listen(PORT, () => {
     initalizeTable();
     console.log("Server running on PORT:",PORT);
 });
+
+export { app, httpServer}

@@ -80,21 +80,40 @@ router.get("/verify-payment", async (req, res) => {
         const do_verify = await verify_payment(trx_ref);
         if (do_verify.status!==200) return res.status(do_verify.status).json({msg:do_verify.msg});
         if (do_verify.payment==="failed") {
+
             const is_round_1 = await do_fail_order(trx_ref, "first");
+
             if (is_round_1.status===400) {
+
                 const is_round_2 = await do_fail_order(trx_ref, "last");
+
                 if (is_round_2.status!==200) return res.status(is_round_2.status).json({msg:is_round_2.msg});
+
             } else if (is_round_1.status!==200) return res.status(is_round_1.status).json({msg:is_round_1.msg});
+
         } else if (do_verify.payment==="success") {
+
             const is_round_1 = await do_success_order(trx_ref, "first", do_verify.amount);
+
             if (is_round_1.status===400) {
+
                 const is_round_2 = await do_success_order(trx_ref, "last", do_verify.amount);
+
                 if (is_round_2.status!==200) return res.status(is_round_2.status).json({msg:is_round_2.msg});
+
             } else if (is_round_1.status!==200) return res.status(is_round_1.status).json({msg:is_round_1.msg});
+
             else if (is_round_1.status===200) {
+
                 const get_ref = (await verify_payment(is_round_1.order.first_tx_ref)).ref_id;
+
                 is_round_1.order["reciept"] = `https://chapa.link/payment-receipt/${get_ref}`;
+
                 confirmPaymentEmail(is_round_1.order);
+
+                const io = req.app.get("io");
+
+                io.to("kitchen").emit("new-order", is_round_1.order);
             };
         };
         return res.status(200).json({msg:"Success."});
