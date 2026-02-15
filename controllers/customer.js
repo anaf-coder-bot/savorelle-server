@@ -134,7 +134,7 @@ export const do_success_order = async (tx_ref, round, amount) => {
             };
             const time = (await pool.query(`
                 UPDATE orders
-                SET first_status = 'paid', first_at = NOW(), status = 'preparing'
+                SET first_status = 'paid', first_at = NOW()
                 WHERE first_tx_ref = $1 RETURNING first_at;
             `, [tx_ref])).rows;
             order[0]["first_at"] = time[0].first_at;
@@ -162,6 +162,10 @@ export const retry_payment = async (id, round) => {
     try {
         const order = (await get_order({id:id})).msg;
         if (order.length===0) return {status:400, msg:"Order not found."};
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const orderDate = new Date(order[0].created_at);
+        if (round==="first" && orderDate <= today) return {status:403, msg:"Payment is cancel, try as new."};
         const tx_ref = await get_tx_ref();
         if (round==="first") {
             if (order[0].first_status!=="failed") return {status:403, msg:"Payment is not failed yet."};

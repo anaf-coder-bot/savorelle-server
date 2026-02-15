@@ -10,6 +10,7 @@ import { allowRoles, authenticate } from "./middleware/protectRoute.js";
 import customerRoute from "./routes/customerRoute.js"
 import managerRoute from "./routes/managerRoute.js";
 import authRoute from "./routes/authRoute.js";
+import kitchenRoute from "./routes/kitchenRoute.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -32,6 +33,7 @@ app.set("trust proxy", true);
 app.use("/auth", authRoute);
 app.use("/customer", customerRoute);
 app.use("/manager", authenticate, allowRoles("manager"), managerRoute);
+app.use("/kitchen", authenticate, allowRoles("kitchen"), kitchenRoute);
 
 httpServer.listen(PORT, () => {
     initalizeTable();
