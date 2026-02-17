@@ -20,6 +20,14 @@ export const initalizeSocket = (httpServer, app) => {
             socket.join("kitchen");
             console.log("Client joined kitchen room.");
         });
+        const username = socket.handshake.auth.username;
+
+        socket.on("join-waiter", () => {
+            if (username) {
+                socket.join(username);
+                console.log(`Waiter ${username} joined.`);
+            };
+        });
 
         socket.on("disconnect", () => {
             console.log("Client disconnect:", socket.id);

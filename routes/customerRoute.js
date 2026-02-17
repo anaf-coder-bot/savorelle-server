@@ -114,6 +114,7 @@ router.get("/verify-payment", async (req, res) => {
                 const io = req.app.get("io");
 
                 io.to("kitchen").emit("new-order", is_round_1.order);
+                io.to(is_round_1.order.waiter_name).emit("new-order", is_round_1.order);
             };
         };
         return res.status(200).json({msg:"Success."});

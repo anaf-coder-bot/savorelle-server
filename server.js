@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { createServer } from "http";
-import { Server } from "socket.io";
 import dotenv from "dotenv";
 dotenv.config();
 import { initalizeTable } from "./models/initalizeTable.js";
@@ -11,6 +10,7 @@ import customerRoute from "./routes/customerRoute.js"
 import managerRoute from "./routes/managerRoute.js";
 import authRoute from "./routes/authRoute.js";
 import kitchenRoute from "./routes/kitchenRoute.js";
+import waiterRoute from "./routes/waiterRoute.js";
 import { initalizeSocket } from "./ws/server.js";
 
 const app = express();
@@ -33,6 +33,7 @@ app.use("/auth", authRoute);
 app.use("/customer", customerRoute);
 app.use("/manager", authenticate, allowRoles("manager"), managerRoute);
 app.use("/kitchen", authenticate, allowRoles("kitchen"), kitchenRoute);
+app.use("/waiter", authenticate, allowRoles("waiter"), waiterRoute);
 
 httpServer.listen(PORT, () => {
     initalizeTable();

@@ -10,7 +10,6 @@ router.post("/login", async (req, res) => {
         const { username, password, client } = req.body;
         if (!username || !password || !['web', 'app'].includes(client))
             return res.status(400).json({msg: "All Fields are required."});
-
         const req_login_user = await login_user(String(username).trim(), password.trim(), client);
         if (req_login_user.status===200) {
             const accessToken = jwt.sign(req_login_user.payload, process.env.JWT_SECRET, {expiresIn: "15m"});
