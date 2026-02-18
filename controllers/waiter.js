@@ -37,3 +37,26 @@ export const get_order = async (id) => {
         return {status:500, msg:"Something went wrong, try again."};
     };
 };
+
+export const update_status = async (id, status) => {
+    try {
+        const order = (await get_order(id)).order;
+        if (order.length===0) return {status:400, msg:"Order not found."};
+        if (status==="paying") {
+            if (order[0].status!=="serving") return {status:403, msg:"Order is not ready for serving."};
+            await pool.query(`
+                UPDATE orders
+                SET status = 'paying'
+                WHERE id = $1;
+            `, [id]);
+            order[0]['status'] = "served";
+        } else if (status==="cash") {
+            if (order[0].status!=="served") return {status:403, msg:"Order is not served."}
+            // SOON
+        };
+        return {status:200, msg:"Success", order};
+    } catch(error) {
+        console.error("Error on waiter: update_status",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+};
