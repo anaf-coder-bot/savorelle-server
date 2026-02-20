@@ -20,7 +20,10 @@ const httpServer = createServer(app);
 
 
 app.use(cors({
-    origin: process.env.FRONTEND,
+    origin: [
+        process.env.FRONTEND,
+        "192.168.1.6:8081"
+    ],
     credentials: true,
 }));
 app.use(cookieParser());

@@ -1,24 +1,24 @@
 import { pool } from "../models/db.js";
 
 
-export const get_order = async (id) => {
+export const get_order = async ({waiter_id, order_id}) => {
     try {
         let order;
         const order_f = [];
-        if (id)
+        if (order_id)
             order = (await pool.query(`
-                SELECT o.id, o.customer_name, t.table_no, o.price, o.status
+                SELECT o.id, o.customer_name, o.customer_email, t.table_no, o.price, o.status, o.first_price, o.last_price, o.first_at
                 FROM orders o
                 JOIN tables t ON t.id = o.table_id
-                WHERE o.id = $1 AND o.first_status <> 'pending' AND o.created_at >= CURRENT_DATE;
-            `, [id])).rows;
+                WHERE o.waiter_id = $1 AND o.id = $2 AND o.first_status <> 'pending' AND o.created_at >= CURRENT_DATE;
+            `, [waiter_id, order_id])).rows;
         else
             order = (await pool.query(`
                 SELECT o.id, o.customer_name, t.table_no, o.price, o.status
                 FROM orders o
                 JOIN tables t ON t.id = o.table_id
-                WHERE o.first_status <> 'pending' AND o.created_at >= CURRENT_DATE;
-            `)).rows;
+                WHERE o.waiter_id = $1 AND o.first_status <> 'pending' AND o.created_at >= CURRENT_DATE;
+            `, [waiter_id])).rows;
         
         for (const o of order) {
             const items = (await pool.query(`
@@ -38,9 +38,9 @@ export const get_order = async (id) => {
     };
 };
 
-export const update_status = async (id, status) => {
+export const update_status = async (id, status, waiter_id) => {
     try {
-        const order = (await get_order(id)).order;
+        const order = (await get_order({waiter_id, order_id:id})).order;
         if (order.length===0) return {status:400, msg:"Order not found."};
         if (status==="paying") {
             if (order[0].status!=="serving") return {status:403, msg:"Order is not ready for serving."};

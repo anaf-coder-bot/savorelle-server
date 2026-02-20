@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { add_order, do_fail_order, do_success_order, get_order, get_product, get_table, retry_payment } from "../controllers/customer.js";
+import { add_order, do_fail_order, do_success_order, get_order, get_product, get_table, pay_rest, retry_payment } from "../controllers/customer.js";
 import { validate as isValidUUID } from "uuid";
 import { confirmEmail, confirmPaymentEmail } from "../utils/email.js";
 import { start_payment, verify_payment } from "../service/chapa.js";
@@ -150,17 +150,18 @@ router.get("/get-order/:round/:tx", async (req, res) => {
         const { round, tx } = req.params;
         if (!['first', 'last'].includes(round)) return res.status(400).json({msg:"Invalid round."});
         let order;
-        if (round==="first") {
-            order = (await get_order({first_tx_ref:tx})).msg
-            if (order.length===0) return res.status(400).json({msg:"Order not found"});
-        } else {
-            order = (await get_order({last_tx_ref:tx})).msg;
-            if (order.length===0) return res.status(400).json({msg:"Order not found."});
+        const isId = isValidUUID(tx);
+        if (!isId) {
+            if (round==="first") order = (await get_order({first_tx_ref:tx})).msg
+            else order = (await get_order({last_tx_ref:tx})).msg;
+        } else order = (await get_order({id:tx})).msg;
+        
+        if (order.length===0) return res.status(400).json({msg:"Order not found"});
+        
+        if (!isId) {
+            const get_ref = (await verify_payment(tx)).ref_id;
+            order[0]["reciept"] = `https://chapa.link/payment-receipt/${get_ref}`
         };
-        const get_ref = (await verify_payment(tx)).ref_id;
-
-        order[0]["reciept"] = `https://chapa.link/payment-receipt/${get_ref}`
-
         return res.status(200).json({order:order[0]});
 
     } catch(error) {
@@ -186,6 +187,24 @@ router.post("/retry-payment", async (req, res) => {
         console.error("Error on /customer/retry-payment:",error.message);
         return res.status(500).json({msg:"Something went wrong, try again."});
     };
-}); 
+});
+
+router.post("/pay-rest", async (req, res) => {
+    try {
+        const { id, tip } = req.body;
+        if (!id) return res.status(400).json({msg:"All fields are required."});
+        if (!isValidUUID(id)) return res.status(400).json({msg:"Invalid Id."});
+        const do_pay = await pay_rest(id, tip);
+        if (do_pay.status!==200) return res.status(do_pay.status).json({msg:do_pay.status});
+        const protocol = req.protocol;
+        const host = req.get("host");
+        const url = `${protocol}://${host}`
+        const pay = await start_payment(do_pay.data.tx_ref, do_pay.data.amount, do_pay.data.name, do_pay.data.email, do_pay.data.phone, url);
+        return res.status(do_pay.status).json({data: pay.msg});
+    } catch(error) {
+        console.error("Error on /customer/pay-rest:",error.message);
+        return res.status(500).json({msg:"Something went wrong, try again."});
+    };
+});
 
 export default router;

@@ -111,3 +111,23 @@ export const confirmPaymentEmail = async (data) => {
         console.error("Error while sending confirm payment email:",error.message);
     };
 };
+
+export const payRestEmail = async (data) => {
+    try {
+        data["first_at"] = new Date(data.first_at).toLocaleString(undefined, {year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"numeric"});
+        const source = await get_template("Pay-Rest.html");
+        const template = Handlebars.compile(source);
+        const url = process.env.FRONTEND+`/pay-rest?order-id=${data.id}`;
+        const htmlContent = template({order:data, payment_link:url});
+        console.log(data)
+        transporter.sendMail({
+            from: '"Savorelle Restaurant" <noreply@savorelle.com>',
+            to:data.customer_email,
+            subject: "Payment Needed.",
+            html:htmlContent
+        });
+        return true;
+    } catch(error) {
+        console.error("Error while sending pay rest payment email:",error.message);
+    };
+};

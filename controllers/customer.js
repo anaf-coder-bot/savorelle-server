@@ -188,3 +188,22 @@ export const retry_payment = async (id, round) => {
         return {status:500, msg:"Something went wrong, try again."};
     };
 };
+
+export const pay_rest = async (id, tip) => {
+    try {
+        const order = (await get_order({id:id})).msg;
+        if (order.length===0) return {status:400, msg:"Order not found."};
+        if (order[0].last_status!=="pending" || order[0].first_status !=="paid" || order[0].status!=="paying") return {status:400, msg:"Payment can't proceed."};
+        const amount = Number(order[0].last_price) + Number(tip||0);
+        if (tip)
+            await pool.query(`
+                UPDATE orders
+                SET tip = $1
+                WHERE id = $2;
+            `, [tip, id]);
+        return {status:200, msg:"Success", data:{amount, email:order[0].customer_email, name:order[0].customer_name, phone:order[0].customer_phone, tx_ref:order[0].last_tx_ref}}
+    } catch(error) {
+        console.error("Error on customer: pay_rest:",error.message);
+        return {status:500, msg:"Something went wrong, try again."};
+    };
+};

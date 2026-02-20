@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Final Payment Request - Savorelle</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4; padding: 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+          
+          <tr>
+            <td align="center" style="padding: 40px 20px; background-color: #1a1a1a;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 4px; text-transform: uppercase;">Savorelle</h1>
+              <p style="color: #bc9355; margin: 10px 0 0 0; font-size: 12px; letter-spacing: 2px;">FINAL PAYMENT REQUEST</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 40px 30px 20px 30px;">
+              <h2 style="color: #333; margin: 0 0 10px 0;">Ready for the Finishing Touch?</h2>
+              <p style="color: #555; line-height: 1.6; font-size: 15px; margin: 0;">
+                Hello {{order.customer_name}}, we hope you enjoyed your dining experience with Savorelle. To complete your transaction, please settle the remaining balance for your order below.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding: 0 30px;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-top: 2px solid #f4f4f4; border-bottom: 2px solid #f4f4f4; padding: 20px 0;">
+                <tr>
+                  <td style="padding: 5px 0; color: #777; font-size: 14px;">Total Order Amount</td>
+                  <td align="right" style="padding: 5px 0; color: #333;">{{order.price}} ETB</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 0; color: #777; font-size: 14px;">Deposit Already Paid</td>
+                  <td align="right" style="padding: 5px 0; color: #27ae60;">- {{order.first_price}} ETB</td>
+                </tr>
+                <tr>
+                  <td style="padding: 15px 0 5px 0; color: #333; font-size: 18px; font-weight: bold;">Balance Due</td>
+                  <td align="right" style="padding: 15px 0 5px 0; color: #e67e22; font-size: 22px; font-weight: bold;">{{order.last_price}} ETB</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding: 40px 30px 20px 30px;">
+              <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="border-radius: 4px;" bgcolor="#bc9355">
+                    <a href="{{payment_link}}" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; padding: 15px 35px; display: inline-block; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Pay Balance Now</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin-top: 25px; font-size: 13px; color: #999; line-height: 1.4;">
+                Clicking the button above will take you to our secure payment gateway to settle the remaining <strong>{{order.last_price}} ETB</strong>.
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding: 0 30px 40px 30px;">
+              <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+              <p style="font-size: 12px; color: #999; margin: 5px 0;">
+                Order ID: #{{order.id}} | Date: {{order.first_at}}
+              </p>
+              <p style="font-size: 12px; color: #999; margin: 5px 0;">
+                Need help? Contact the waiter
+              </p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding: 20px; background-color: #f9f9f9; color: #bbb; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">
+              © 2026 Savorelle Restaurant. Experience Excellence.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
